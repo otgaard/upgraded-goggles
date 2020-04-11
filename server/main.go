@@ -49,7 +49,7 @@ func main() {
 		Handler:      nil,
 	}
 
-	// The pageCache supports 32 x 32 tiles for now or about 64 Megs when fully loaded...
+	// The pageCache supports 32 x 32 tiles for now or about 64Mb * 2 (buffer + img) when fully loaded...
 	pageCache := model.NewPageCache(32, 32)
 
 	if templates == nil {
