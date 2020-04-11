@@ -30,11 +30,13 @@ func worker(client *http.Client, jobs <-chan Coordinate, results chan<- int) {
 		resp, err := client.Get("http://localhost:8080/page/" + coordStr)
 		if err != nil {
 			fmt.Println("Error: " + err.Error())
+			continue
 		} else {
 			fmt.Println("Starting job " + coordStr)
 			buf, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				fmt.Println("Error: " + err.Error())
+				continue
 			}
 
 			l := len(string(buf))
@@ -74,8 +76,8 @@ func main() {
 
 	singleGET(client)
 
-	const jobCount = 200000 // We're going to do 200000 requests for pages to get an idea of scaling
-	const workerCount = 5   // Over 5 workers
+	const jobCount = 20   // We're going to do 200000 requests for pages to get an idea of scaling
+	const workerCount = 5 // Over 5 workers
 
 	jobs := make(chan Coordinate, jobCount)
 	results := make(chan int, jobCount)

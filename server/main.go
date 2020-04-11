@@ -58,7 +58,7 @@ func main() {
 	}
 
 	http.HandleFunc("/page/", makeHandler(pageCache, pageHandler))
-	http.Handle("/", http.FileServer(http.Dir("../www")))
+	http.Handle("/", http.FileServer(http.Dir("www")))
 
 	log.Fatal(srv.ListenAndServe())
 }
