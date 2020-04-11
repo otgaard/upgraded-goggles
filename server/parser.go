@@ -8,7 +8,7 @@ import (
 	"upgraded-goggles/server/model"
 )
 
-var coordRegex = regexp.MustCompile("^\\[([0-9]+),([0-9]+)\\]$")
+var coordRegex = regexp.MustCompile("^\\[([0-9]+),([0-9]+)]$")
 
 // Parse a coordinate from an input URL
 func ParseCoordinate(url string) (*model.Coordinate, error) {

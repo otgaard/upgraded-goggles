@@ -1,10 +1,13 @@
 package model
 
-import "fmt"
-
-/*
-For now the coordinate is always (0, 0), but later we will add a tileable map
-*/
+import (
+	"bytes"
+	"encoding/base64"
+	"fmt"
+	"image"
+	"image/png"
+	"math"
+)
 
 type Page struct {
 	Pos      Coordinate // The coordinate of this tile
@@ -12,15 +15,42 @@ type Page struct {
 	Height   int
 	Channels int
 	Data     []byte // The tile data, 256 x 256
+	Img      string // base64 encoded string
 }
 
-func NewPage(x, y, width, height, ch int) *Page {
+const twoPi = 2.0 * math.Pi
+
+// We'll generate a sine wave for now
+func NewPage(coord Coordinate, width, height, ch int) *Page {
+	data := make([]byte, width*height)
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	idx := 0
+	for r := 0; r != height; r++ {
+		for c := 0; c != width; c++ {
+			data[idx] = byte((.5 * (math.Sin(twoPi*float64(c)/float64(width)) + 1.0)) * 255.)
+			for ch := 0; ch != 3; ch++ {
+				img.Pix[4*idx+ch] = data[idx]
+			}
+			img.Pix[4*idx+3] = 255
+			idx++
+		}
+	}
+
+	var buffer bytes.Buffer
+	if err := png.Encode(&buffer, img); err != nil {
+		fmt.Println("Failed to encode image")
+		return nil
+	}
+	output := "data:image/png;base64," + base64.StdEncoding.EncodeToString(buffer.Bytes())
+
 	return &Page{
-		Pos:      Coordinate{X: x, Y: y},
+		Pos:      coord,
 		Width:    width,
 		Height:   height,
 		Channels: ch,
-		Data:     nil,
+		Data:     data,
+		Img:      output,
 	}
 }
 

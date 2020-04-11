@@ -1,6 +1,9 @@
 package model
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // PageCache stores previously created pages in a rudimentary (for now...) cache
 type PageCache struct {
@@ -27,15 +30,16 @@ func (p *PageCache) Store(page *Page) error {
 	}
 }
 
-func (p *PageCache) generatePage(x, y int) *Page {
-	return NewPage(x, y, 256, 256, 1)
+func (p *PageCache) generatePage(coord Coordinate) *Page {
+	return NewPage(coord, 256, 256, 1)
 }
 
-func (p *PageCache) GetPage(x, y int) (*Page, error) {
-	if 0 <= x && x < p.width && 0 <= y && y < p.height {
-		idx := y*p.width + x
+func (p *PageCache) GetPage(coord Coordinate) (*Page, error) {
+	if 0 <= coord.X && coord.X < p.width && 0 <= coord.Y && coord.Y < p.height {
+		idx := coord.Y*p.width + coord.X
 		if p.cache[idx] == nil {
-			p.cache[idx] = p.generatePage(x, y)
+			fmt.Println("Storing page in cache")
+			p.cache[idx] = p.generatePage(coord)
 		}
 		return p.cache[idx], nil
 	} else {
