@@ -1,2 +1,12 @@
 # upgraded-goggles
-A Go/Node.js/Docker Playground
+
+An architectural test system using a RESTful backend serving pages of data
+to a tiling image frontend in WebGL.
+
+Features
+--------
+
+1) Go HTTP/S server, serving frontend & API
+2) Docker container configured for localhost
+3) WebGL renderer packaged by webpack
+
