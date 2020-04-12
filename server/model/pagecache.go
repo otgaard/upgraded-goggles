@@ -31,7 +31,7 @@ func (p *PageCache) Store(page *Page) error {
 }
 
 func (p *PageCache) generatePage(coord Coordinate) *Page {
-	return NewPage(coord, 256, 256, 1)
+	return NewPage(nil, coord, 256, 256, 1)
 }
 
 func (p *PageCache) GetPage(coord Coordinate) (*Page, error) {

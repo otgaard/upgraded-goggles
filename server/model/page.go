@@ -28,15 +28,22 @@ func translateWave(x, y, c, r, w, h int) byte {
 	return byte(.25 * (math.Sin(theta) + 1. + math.Sin(omega) + 1.) * 255.)
 }
 
+func valueNoise(x, y, c, r, w, h int, perlin *Perlin) byte {
+	fx := 10. * (float32(x) + float32(c)/float32(w))
+	fy := 30. * (float32(y)/3. + float32(r)/float32(h))
+	return byte(.5 * (perlin.ValueNoise(fx, fy) + 1.) * 255.)
+}
+
 // We'll generate a sine wave for now
-func NewPage(coord Coordinate, width, height, ch int) *Page {
+func NewPage(perlin *Perlin, coord Coordinate, width, height, ch int) *Page {
 	data := make([]byte, width*height)
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 
 	idx := 0
 	for r := 0; r != height; r++ {
 		for c := 0; c != width; c++ {
-			data[idx] = translateWave(coord.X, coord.Y, c, r, width, height)
+			//data[idx] = translateWave(coord.X, coord.Y, c, r, width, height)
+			data[idx] = valueNoise(coord.X, coord.Y, c, r, width, height, perlin)
 			for ch := 0; ch != 3; ch++ {
 				img.Pix[4*idx+ch] = data[idx]
 			}

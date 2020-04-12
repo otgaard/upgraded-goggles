@@ -6,11 +6,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 	"upgraded-goggles/server/model"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*"))
+var perlin = model.NewPerlin(0)
 
 func pageHandler(pageCache *model.PageCache, w http.ResponseWriter, r *http.Request) {
 	coord, err := ParseCoordinate(r.URL.Path[len("/page/"):])
@@ -19,7 +21,7 @@ func pageHandler(pageCache *model.PageCache, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	page := model.NewPage(*coord, 256, 256, 1)
+	page := model.NewPage(perlin, *coord, 256, 256, 1)
 
 	/*
 		No Caching for now
@@ -57,6 +59,11 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 		Handler:      nil,
 	}
+
+	A := model.Vector2i{X: 1, Y: 2}
+	B := model.Vector2i{X: 2, Y: -3}
+
+	fmt.Println("X: " + strconv.Itoa(A.Sub(B).X) + ", Y: " + strconv.Itoa(A.Mul(12).Y))
 
 	// The pageCache supports 32 x 32 tiles for now or about 64Mb * 2 (buffer + img) when fully loaded...
 	pageCache := model.NewPageCache(32, 32)
