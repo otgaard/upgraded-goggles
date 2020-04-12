@@ -14,11 +14,18 @@ type Page struct {
 	Width    int
 	Height   int
 	Channels int
-	Data     []byte // The tile data, 256 x 256
+	data     []byte // The tile data, 256 x 256
 	Img      string // base64 encoded string
 }
 
 const twoPi = 2.0 * math.Pi
+
+// This function translates a sine wave in the x axis by the specified coordinate so that we can tile a
+// basic image before we move to a fuller implementation
+func translateWave(x, c, w, h int) byte {
+	theta := float64(x) + float64(c)/float64(w)
+	return byte(.5 * (math.Sin(theta) + 1.) * 255.)
+}
 
 // We'll generate a sine wave for now
 func NewPage(coord Coordinate, width, height, ch int) *Page {
@@ -28,7 +35,7 @@ func NewPage(coord Coordinate, width, height, ch int) *Page {
 	idx := 0
 	for r := 0; r != height; r++ {
 		for c := 0; c != width; c++ {
-			data[idx] = byte((.5 * (math.Sin(twoPi*float64(c)/float64(width)) + 1.0)) * 255.)
+			data[idx] = translateWave(coord.X, c, width, height)
 			for ch := 0; ch != 3; ch++ {
 				img.Pix[4*idx+ch] = data[idx]
 			}
@@ -49,7 +56,7 @@ func NewPage(coord Coordinate, width, height, ch int) *Page {
 		Width:    width,
 		Height:   height,
 		Channels: ch,
-		Data:     data,
+		data:     data,
 		Img:      output,
 	}
 }

@@ -1,6 +1,3 @@
-
-const glCtx = WebGLRenderingContext;
-
 class Shader extends WebGLShader {
     public static create(context: WebGLRenderingContext, type: GLenum, source: string): Shader | null {
         let shdr: Shader | null = context.createShader(type);
@@ -71,8 +68,10 @@ const frgShdr = `
     
     varying vec2 texcoord;
     
+    uniform sampler2D tex0;
+    
     void main() {
-        gl_FragColor = vec4(texcoord, 0., 1.);
+        gl_FragColor = texture2D(tex0, texcoord);
     }
 `;
 
@@ -82,6 +81,7 @@ interface RenderState {
     prog: Program;
     vbuf: WebGLBuffer;
     loc0: number;
+    textures: Array<WebGLTexture>;
 }
 
 export default class Renderer {
@@ -102,18 +102,43 @@ export default class Renderer {
         if(this.gl === null) throw "Failed to initialise Renderer";
 
         // For now, draw a coloured quad
-        this.initDemoResources();
+        if(!this.initDemoResources()) throw "Failed to initialise WebGL Resources";
 
-        return this.gl.getError() === glCtx.NO_ERROR;
+        return this.gl.getError() === this.gl.NO_ERROR;
     }
 
     public clear(): void {
         if(this.gl) {
-            this.gl.clear(glCtx.COLOR_BUFFER_BIT);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         }
     }
 
     private rndr: RenderState | null = null;
+
+    public setTexture(unit: number, data: Uint8Array): void {
+        if(!this.rndr) return;
+
+        const [gl, tex] = [this.rndr.gl, this.rndr.textures[unit]];
+
+        gl.activeTexture(gl.TEXTURE0 + unit);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            256,
+            256,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            data
+        );
+
+        if(unit !== 0) {
+            gl.activeTexture(gl.TEXTURE0);
+        }
+    }
+
 
     public render(): void {
         if(!this.rndr) return;
@@ -121,12 +146,12 @@ export default class Renderer {
         const {gl, prog, vbuf, loc0} = this.rndr;
 
         gl.useProgram(prog);
-        gl.bindBuffer(glCtx.ARRAY_BUFFER, vbuf);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbuf);
         gl.enableVertexAttribArray(loc0);
-        gl.vertexAttribPointer(loc0, 2, glCtx.FLOAT, false, 0, 0);
-        gl.bindBuffer(glCtx.ARRAY_BUFFER, null);
+        gl.vertexAttribPointer(loc0, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-        gl.drawArrays(glCtx.TRIANGLE_STRIP, 0, 4);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
         gl.useProgram(null);
     }
@@ -143,23 +168,58 @@ export default class Renderer {
         vbuf = gl.createBuffer();
         if(!vbuf) return false;
 
-        gl.bindBuffer(glCtx.ARRAY_BUFFER, vbuf);
-        gl.bufferData(glCtx.ARRAY_BUFFER, new Float32Array(quadPositions), glCtx.STATIC_DRAW);
-        gl.bindBuffer(glCtx.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(quadPositions), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
         prog = Program.create(gl, vtxShdr, frgShdr);
         if(!prog) return false;
+        
+        gl.useProgram(prog);
 
         loc0 = gl.getAttribLocation(prog, "position");
         if(loc0 !== 0) return false;
+
+        const loc1 = gl.getUniformLocation(prog, "tex0");
+        if(loc1 === -1) return false;
+
+        // Set tex0 to unit 0
+        gl.uniform1i(loc1, 0);
+        gl.useProgram(null);
+
+        const textures = new Array<WebGLTexture>(1);
+        let tex = gl.createTexture();
+        if(!tex) return false;
+
+        gl.activeTexture(gl.TEXTURE0); // unit 0
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            256,
+            256,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            null
+        );
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        textures[0] = tex;
 
         this.rndr = {
             gl: gl,
             vbuf: vbuf,
             prog: prog,
             loc0: loc0,
+            textures: textures,
         }
 
-        return gl.getError() === glCtx.NO_ERROR;
+        return gl.getError() === gl.NO_ERROR;
     }
 }

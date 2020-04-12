@@ -1,10 +1,11 @@
 import React from "react";
 import Renderer from '../webgl/Renderer';
+import fetchPage from '../api/api';
 
 export interface MapRendererProps {
     width: number;
     height: number;
-    coord: number;
+    coord: [number, number];
 }
 
 interface MapRendererState {
@@ -36,14 +37,32 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
     }
 
     public componentDidUpdate(prevProps: Readonly<MapRendererProps>, _: Readonly<MapRendererState>): void {
-        if(prevProps.coord !== this.props.coord) {
-
+        if(prevProps.coord[0] !== this.props.coord[0] || prevProps.coord[1] !== this.props.coord[1]) {
+            fetchPage(this.props.coord[0], this.handlePage)
         }
     }
 
     private renderFnc = (): void => {
         this.aniReq = requestAnimationFrame(this.renderFnc);
         this.state.renderer.render();
+    }
+
+    private handlePage = (base64: string):void => {
+        // Decode the image, store in a texture, and display on the quad
+        const image = new Image();
+        image.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const ctx = canvas.getContext("2d");
+            if(ctx) {
+                ctx.drawImage(image, 0, 0);
+                const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                this.state.renderer.setTexture(0, Uint8Array.from(img.data));
+            }
+
+        }
+        image.src = base64;
     }
 
     public render(): React.ReactNode {
