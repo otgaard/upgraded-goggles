@@ -8,7 +8,8 @@ export default function App() {
     const [source, setSource] = React.useState("");
     const [coord, setCoord] = React.useState(15);
 
-    const handleSourceChange = (value: string) => {
+    const handleSourceChange = (coord: [number, number], value: string) => {
+        console.log("coord:", coord);
         setSource(value);
     }
 
@@ -20,14 +21,14 @@ export default function App() {
                 displayed in a WebGL renderer packaged with webpack and deployed with Docker.
             </p>
 
-            <MapRenderer width={640} height={480} coord={[coord, 15]} />
+            <MapRenderer width={512} height={512} coord={[coord, 15]} />
 
             <h2>Test API</h2>
 
             <button onClick={() => {
                 const val = Math.max(0, coord - 1)
                 setCoord(val)
-                fetchPage(val, handleSourceChange);
+                fetchPage([val, 15], handleSourceChange);
             }}>
                 -
             </button>
@@ -35,7 +36,7 @@ export default function App() {
             <button onClick={() => {
                 const val = Math.min(coord + 1, 31)
                 setCoord(val)
-                fetchPage(val, handleSourceChange);
+                fetchPage([val, 15], handleSourceChange);
             }}>
                 +
             </button>

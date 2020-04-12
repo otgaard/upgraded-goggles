@@ -38,7 +38,10 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
 
     public componentDidUpdate(prevProps: Readonly<MapRendererProps>, _: Readonly<MapRendererState>): void {
         if(prevProps.coord[0] !== this.props.coord[0] || prevProps.coord[1] !== this.props.coord[1]) {
-            fetchPage(this.props.coord[0], this.handlePage)
+
+            fetchPage(this.props.coord, this.handlePage)
+            fetchPage([this.props.coord[0]+1, this.props.coord[1]], this.handlePage);
+            fetchPage([this.props.coord[0]+2, this.props.coord[1]], this.handlePage);
         }
     }
 
@@ -47,8 +50,13 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
         this.state.renderer.render();
     }
 
-    private handlePage = (base64: string):void => {
+    private handlePage = (coord: [number, number], base64: string):void => {
         // Decode the image, store in a texture, and display on the quad
+        if(base64 === "") {
+            this.state.renderer.setTexture(coord[0] - this.props.coord[0], null);
+            return;
+        }
+
         const image = new Image();
         image.onload = () => {
             const canvas = document.createElement("canvas");
@@ -58,9 +66,9 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
             if(ctx) {
                 ctx.drawImage(image, 0, 0);
                 const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                this.state.renderer.setTexture(0, Uint8Array.from(img.data));
+                console.log("offset:" + (coord[0] - this.props.coord[0]));
+                this.state.renderer.setTexture(coord[0] - this.props.coord[0], Uint8Array.from(img.data));
             }
-
         }
         image.src = base64;
     }

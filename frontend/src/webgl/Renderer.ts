@@ -8,7 +8,7 @@ class Shader extends WebGLShader {
         if(context.getShaderParameter(shdr, context.COMPILE_STATUS)) {
             return shdr;
         } else {
-            console.log(context.getShaderInfoLog(shdr));
+            console.log("WebGL " + (type === WebGLRenderingContext.FRAGMENT_SHADER ? "Fragment" : "Vertex") + " Shader:\n" + context.getShaderInfoLog(shdr));
             context.deleteShader(shdr);
             return null;
         }
@@ -33,7 +33,7 @@ class Program extends WebGLProgram {
             context.deleteShader(fshdr);
             return prog;
         } else {
-            console.log(context.getProgramInfoLog(prog));
+            console.log("WebGL Program:\n" + context.getProgramInfoLog(prog));
             context.deleteProgram(prog);
             context.deleteShader(vshdr);
             context.deleteShader(fshdr);
@@ -51,7 +51,7 @@ const quadPositions = [
 ];
 
 const vtxShdr = `
-    precision mediump float;
+    precision highp float;
     
     attribute vec2 position;
     
@@ -64,14 +64,23 @@ const vtxShdr = `
 `;
 
 const frgShdr = `
-    precision mediump float;
+    precision highp float;
     
     varying vec2 texcoord;
     
     uniform sampler2D tex0;
+    uniform sampler2D tex1;
+    uniform sampler2D tex2;
+    
+    #define oneThird 1./3.
+    #define twoThird 2./3.
     
     void main() {
-        gl_FragColor = texture2D(tex0, texcoord);
+        gl_FragColor = texcoord.x < oneThird 
+            ? texture2D(tex0, vec2(texcoord.x*3., texcoord.y))
+            : oneThird <= texcoord.x && texcoord.x < twoThird
+                ? texture2D(tex1, vec2((texcoord.x - oneThird)*3., texcoord.y))
+                : texture2D(tex2, vec2((texcoord.x - twoThird)*3., texcoord.y));
     }
 `;
 
@@ -115,7 +124,7 @@ export default class Renderer {
 
     private rndr: RenderState | null = null;
 
-    public setTexture(unit: number, data: Uint8Array): void {
+    public setTexture(unit: number, data: Uint8Array | null): void {
         if(!this.rndr) return;
 
         const [gl, tex] = [this.rndr.gl, this.rndr.textures[unit]];
@@ -143,13 +152,18 @@ export default class Renderer {
     public render(): void {
         if(!this.rndr) return;
 
-        const {gl, prog, vbuf, loc0} = this.rndr;
+        const {gl, prog, vbuf, loc0, textures} = this.rndr;
 
         gl.useProgram(prog);
         gl.bindBuffer(gl.ARRAY_BUFFER, vbuf);
         gl.enableVertexAttribArray(loc0);
         gl.vertexAttribPointer(loc0, 2, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        for(let i = 0; i !== textures.length; ++i) {
+            gl.activeTexture(gl.TEXTURE0 + i);
+            gl.bindTexture(gl.TEXTURE_2D, textures[i]);
+        }
 
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -181,36 +195,44 @@ export default class Renderer {
         if(loc0 !== 0) return false;
 
         const loc1 = gl.getUniformLocation(prog, "tex0");
-        if(loc1 === -1) return false;
+        const loc2 = gl.getUniformLocation(prog, "tex1");
+        const loc3 = gl.getUniformLocation(prog, "tex2");
 
-        // Set tex0 to unit 0
         gl.uniform1i(loc1, 0);
+        gl.uniform1i(loc2, 1);
+        gl.uniform1i(loc3, 2);
+
         gl.useProgram(null);
 
-        const textures = new Array<WebGLTexture>(1);
-        let tex = gl.createTexture();
-        if(!tex) return false;
+        const textures = new Array<WebGLTexture>(3);
 
-        gl.activeTexture(gl.TEXTURE0); // unit 0
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            256,
-            256,
-            0,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            null
-        );
+        for(let i = 0; i != 3; ++i) {
+            let tex = gl.createTexture();
+            if(!tex) return false;
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            console.log("Creating Tex " + i);
 
-        textures[0] = tex;
+            gl.activeTexture(gl.TEXTURE0 + i);
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                256,
+                256,
+                0,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                null
+            );
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+            textures[i] = tex;
+        }
 
         this.rndr = {
             gl: gl,
