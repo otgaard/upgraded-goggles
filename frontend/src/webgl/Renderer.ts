@@ -210,8 +210,6 @@ export default class Renderer {
             let tex = gl.createTexture();
             if(!tex) return false;
 
-            console.log("Creating Tex " + i);
-
             gl.activeTexture(gl.TEXTURE0 + i);
             gl.bindTexture(gl.TEXTURE_2D, tex);
             gl.texImage2D(

@@ -22,9 +22,10 @@ const twoPi = 2.0 * math.Pi
 
 // This function translates a sine wave in the x axis by the specified coordinate so that we can tile a
 // basic image before we move to a fuller implementation
-func translateWave(x, c, w, h int) byte {
-	theta := float64(x) + float64(c)/float64(w)
-	return byte(.5 * (math.Sin(theta) + 1.) * 255.)
+func translateWave(x, y, c, r, w, h int) byte {
+	theta := 3. * (float64(x) + float64(c)/float64(w))
+	omega := 9. * (float64(y) + float64(r)/float64(h))
+	return byte(.25 * (math.Sin(theta) + 1. + math.Sin(omega) + 1.) * 255.)
 }
 
 // We'll generate a sine wave for now
@@ -35,7 +36,7 @@ func NewPage(coord Coordinate, width, height, ch int) *Page {
 	idx := 0
 	for r := 0; r != height; r++ {
 		for c := 0; c != width; c++ {
-			data[idx] = translateWave(coord.X, c, width, height)
+			data[idx] = translateWave(coord.X, coord.Y, c, r, width, height)
 			for ch := 0; ch != 3; ch++ {
 				img.Pix[4*idx+ch] = data[idx]
 			}

@@ -66,7 +66,6 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
             if(ctx) {
                 ctx.drawImage(image, 0, 0);
                 const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                console.log("offset:" + (coord[0] - this.props.coord[0]));
                 this.state.renderer.setTexture(coord[0] - this.props.coord[0], Uint8Array.from(img.data));
             }
         }

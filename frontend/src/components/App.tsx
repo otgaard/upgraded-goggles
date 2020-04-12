@@ -18,7 +18,8 @@ export default function App() {
             <h1>Paged Map Renderer</h1>
             <p style={{width: 200, display: "block", float: "left"}}>
                 A full stack architectural test of a Go backend serving "map" pages to a frontend in Typescript + React
-                displayed in a WebGL renderer packaged with webpack and deployed with Docker.
+                displayed in a WebGL renderer packaged with webpack and deployed with Docker. The display to the right is
+                tiled and fetches the image data from the server.
             </p>
 
             <MapRenderer width={512} height={512} coord={[coord, 15]} />
