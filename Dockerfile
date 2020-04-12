@@ -2,9 +2,9 @@ FROM golang:1.14.2-alpine3.11
 
 RUN mkdir /app
 
-ADD . /app
-ADD ./templates /app/templates
-ADD ./www /app/www
+ADD server/server /app
+ADD server/templates /app/templates
+ADD frontend/dist /app/www
 
 WORKDIR /app
 

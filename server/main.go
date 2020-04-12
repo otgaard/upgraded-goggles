@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -26,6 +27,8 @@ func pageHandler(pageCache *model.PageCache, w http.ResponseWriter, r *http.Requ
 
 	model.PrintPage(page)
 
+	json.NewEncoder(w).Encode(page)
+	/*
 	err = templates.ExecuteTemplate(w, "page.html", page)
 	if err != nil {
 		fmt.Println("Whoa, should not be happening")
@@ -33,6 +36,7 @@ func pageHandler(pageCache *model.PageCache, w http.ResponseWriter, r *http.Requ
 	}
 
 	fmt.Fprintln(w, "<img src=\""+page.Img+"\" />")
+    */
 }
 
 func makeHandler(pageCache *model.PageCache, fn func(*model.PageCache, http.ResponseWriter, *http.Request)) http.HandlerFunc {
@@ -58,7 +62,7 @@ func main() {
 	}
 
 	http.HandleFunc("/page/", makeHandler(pageCache, pageHandler))
-	http.Handle("/", http.FileServer(http.Dir("www")))
+	http.Handle("/", http.FileServer(http.Dir("../frontend/dist")))
 
 	log.Fatal(srv.ListenAndServe())
 }
