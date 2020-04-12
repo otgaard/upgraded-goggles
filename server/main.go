@@ -19,24 +19,29 @@ func pageHandler(pageCache *model.PageCache, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	page, err := pageCache.GetPage(*coord)
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
+	page := model.NewPage(*coord, 256, 256, 1)
+
+	/*
+		No Caching for now
+		page, err := pageCache.GetPage(*coord)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+	*/
 
 	model.PrintPage(page)
 
 	json.NewEncoder(w).Encode(page)
 	/*
-	err = templates.ExecuteTemplate(w, "page.html", page)
-	if err != nil {
-		fmt.Println("Whoa, should not be happening")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+		err = templates.ExecuteTemplate(w, "page.html", page)
+		if err != nil {
+			fmt.Println("Whoa, should not be happening")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
-	fmt.Fprintln(w, "<img src=\""+page.Img+"\" />")
-    */
+		fmt.Fprintln(w, "<img src=\""+page.Img+"\" />")
+	*/
 }
 
 func makeHandler(pageCache *model.PageCache, fn func(*model.PageCache, http.ResponseWriter, *http.Request)) http.HandlerFunc {

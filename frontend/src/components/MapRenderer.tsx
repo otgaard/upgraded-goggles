@@ -30,6 +30,9 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
         else console.error("No canvas");
 
         this.renderFnc();
+        fetchPage(this.props.coord, this.handlePage)
+        fetchPage([this.props.coord[0]+1, this.props.coord[1]], this.handlePage);
+        fetchPage([this.props.coord[0]+2, this.props.coord[1]], this.handlePage);
     }
 
     public componentWillUnmount(): void {
@@ -38,7 +41,6 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
 
     public componentDidUpdate(prevProps: Readonly<MapRendererProps>, _: Readonly<MapRendererState>): void {
         if(prevProps.coord[0] !== this.props.coord[0] || prevProps.coord[1] !== this.props.coord[1]) {
-
             fetchPage(this.props.coord, this.handlePage)
             fetchPage([this.props.coord[0]+1, this.props.coord[1]], this.handlePage);
             fetchPage([this.props.coord[0]+2, this.props.coord[1]], this.handlePage);

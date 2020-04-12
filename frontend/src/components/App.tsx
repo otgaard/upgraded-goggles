@@ -6,7 +6,8 @@ import fetchPage from '../api/api';
 
 export default function App() {
     const [source, setSource] = React.useState("");
-    const [coord, setCoord] = React.useState(15);
+    const [coordX, setCoordX] = React.useState(15);
+    const [coordY, setCoordY] = React.useState(15);
 
     const handleSourceChange = (coord: [number, number], value: string) => {
         console.log("coord:", coord);
@@ -22,27 +23,43 @@ export default function App() {
                 tiled and fetches the image data from the server.
             </p>
 
-            <MapRenderer width={512} height={512} coord={[coord, 15]} />
+            <MapRenderer width={512} height={512} coord={[coordX, coordY]} />
 
             <h2>Test API</h2>
 
             <button onClick={() => {
-                const val = Math.max(0, coord - 1)
-                setCoord(val)
-                fetchPage([val, 15], handleSourceChange);
+                const val = coordX - 1
+                setCoordX(val)
+                fetchPage([val, coordY], handleSourceChange);
             }}>
-                -
+                left
             </button>
 
             <button onClick={() => {
-                const val = Math.min(coord + 1, 31)
-                setCoord(val)
-                fetchPage([val, 15], handleSourceChange);
+                const val = coordX + 1
+                setCoordX(val)
+                fetchPage([val, coordY], handleSourceChange);
             }}>
-                +
+                right
             </button>
 
-            <h3>Coordinate: [{coord},15]</h3>
+            <button onClick={() => {
+                const val = coordY + 1
+                setCoordY(val)
+                fetchPage([coordX, val], handleSourceChange);
+            }}>
+                up
+            </button>
+
+            <button onClick={() => {
+                const val = coordY - 1
+                setCoordY(val)
+                fetchPage([coordX, val], handleSourceChange);
+            }}>
+                down
+            </button>
+
+            <h3>Coordinate: [{coordX},{coordY}]</h3>
 
             <h3>Image</h3>
 
