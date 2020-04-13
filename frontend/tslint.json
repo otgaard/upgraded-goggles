@@ -89,7 +89,7 @@
     "trailing-comma": [
       true,
       {
-        "multiline": "never",
+        "multiline": "always",
         "singleline": "never"
       }
     ],
@@ -119,7 +119,7 @@
     ],
     "quotemark": [
       true,
-      "single",
+      "double",
       "avoid-escape"
     ],
     "semicolon": [
@@ -134,11 +134,10 @@
     ],
     "whitespace": [
       true,
-      "check-branch",
       "check-decl",
-      "check-operator",
       "check-separator",
-      "check-type"
+      "check-type",
+      "check-typecast"
     ]
   }
 }

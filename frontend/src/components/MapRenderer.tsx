@@ -1,6 +1,6 @@
 import React from "react";
-import Renderer from '../webgl/Renderer';
-import fetchPage from '../api/api';
+import Renderer from "../webgl/Renderer";
+import fetchPage from "../api/api";
 
 export interface MapRendererProps {
     width: number;
@@ -30,7 +30,7 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
         else console.error("No canvas");
 
         this.renderFnc();
-        fetchPage(this.props.coord, this.handlePage)
+        fetchPage(this.props.coord, this.handlePage);
         fetchPage([this.props.coord[0]+1, this.props.coord[1]], this.handlePage);
         fetchPage([this.props.coord[0]+2, this.props.coord[1]], this.handlePage);
     }
@@ -41,7 +41,7 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
 
     public componentDidUpdate(prevProps: Readonly<MapRendererProps>, _: Readonly<MapRendererState>): void {
         if(prevProps.coord[0] !== this.props.coord[0] || prevProps.coord[1] !== this.props.coord[1]) {
-            fetchPage(this.props.coord, this.handlePage)
+            fetchPage(this.props.coord, this.handlePage);
             fetchPage([this.props.coord[0]+1, this.props.coord[1]], this.handlePage);
             fetchPage([this.props.coord[0]+2, this.props.coord[1]], this.handlePage);
         }
@@ -52,7 +52,7 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
         this.state.renderer.render();
     }
 
-    private handlePage = (coord: [number, number], base64: string):void => {
+    private handlePage = (coord: [number, number], base64: string): void => {
         // Decode the image, store in a texture, and display on the quad
         if(base64 === "") {
             this.state.renderer.setTexture(coord[0] - this.props.coord[0], null);
@@ -70,7 +70,7 @@ export default class MapRenderer extends React.Component<MapRendererProps, MapRe
                 const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 this.state.renderer.setTexture(coord[0] - this.props.coord[0], Uint8Array.from(img.data));
             }
-        }
+        };
         image.src = base64;
     }
 

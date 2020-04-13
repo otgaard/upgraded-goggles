@@ -1,6 +1,6 @@
 export default function fetchPage(coord: [number, number], cb: (coord: [number, number], str: string) => void): void {
     const http = new XMLHttpRequest();
-    const url = "http://localhost:8080/page/[" + coord[0] + "," + coord[1] + "]";
+    const url = "http://localhost:8081/page/[" + coord[0] + "," + coord[1] + "]";
 
     console.log("Fetching: " + url);
 
@@ -16,5 +16,5 @@ export default function fetchPage(coord: [number, number], cb: (coord: [number, 
         } else if(this.status === 404) {
             cb(coord, "");
         }
-    }
+    };
 }
